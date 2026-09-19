@@ -68,13 +68,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
 // ================================
-// DEPARTURE AREAS
+// DEPARTURE AREAS + DESTINATIONS
 // ================================
 
 async function loadDepartureAreas() {
   const select = document.getElementById("from");
 
-  if (!select) return;
+  if (!select) {
+    console.error("Departure area element #from was not found.");
+    return;
+  }
 
   const { data, error } = await supabase
     .from("departure_areas")
@@ -83,14 +86,14 @@ async function loadDepartureAreas() {
     .order("name");
 
   if (error) {
-    console.error(error);
+    console.error("Could not load departure areas:", error);
     return;
   }
 
   select.innerHTML =
     '<option value="">Select departure area</option>';
 
-  data.forEach(area => {
+  (data || []).forEach(area => {
     const option = document.createElement("option");
 
     option.value = area.id;
@@ -98,6 +101,148 @@ async function loadDepartureAreas() {
 
     select.appendChild(option);
   });
+
+  select.addEventListener("change", loadDestinationsForDeparture);
+
+  resetDestinationField();
+}
+
+
+function resetDestinationField() {
+  const destination = document.getElementById("destination");
+
+  if (!destination) {
+    console.error("Destination element #destination was not found.");
+    return;
+  }
+
+  destination.value = "";
+
+  if (destination.tagName === "SELECT") {
+    destination.innerHTML =
+      '<option value="">Select destination</option>';
+    destination.disabled = true;
+  }
+
+  if (destination.tagName === "INPUT") {
+    destination.placeholder = "Select departure area first";
+
+    const listId = destination.getAttribute("list");
+
+    if (listId) {
+      const list = document.getElementById(listId);
+      if (list) list.innerHTML = "";
+    }
+  }
+}
+
+
+async function loadDestinationsForDeparture() {
+  const from = document.getElementById("from");
+  const destination = document.getElementById("destination");
+
+  if (!from || !destination) return;
+
+  const departureAreaId = from.value;
+
+  if (!departureAreaId) {
+    resetDestinationField();
+    return;
+  }
+
+  destination.disabled = true;
+
+  if (destination.tagName === "SELECT") {
+    destination.innerHTML =
+      '<option value="">Loading destinations...</option>';
+  } else if (destination.tagName === "INPUT") {
+    destination.value = "";
+    destination.placeholder = "Loading destinations...";
+  }
+
+  const { data, error } = await supabase
+    .from("routes")
+    .select("id,destination")
+    .eq("departure_area_id", departureAreaId)
+    .eq("active", true)
+    .order("destination");
+
+  if (error) {
+    console.error("Could not load destinations:", error);
+
+    if (destination.tagName === "SELECT") {
+      destination.innerHTML =
+        '<option value="">Could not load destinations</option>';
+    } else {
+      destination.value = "";
+      destination.placeholder = "Could not load destinations";
+    }
+
+    return;
+  }
+
+  const routes = data || [];
+
+  if (!routes.length) {
+    if (destination.tagName === "SELECT") {
+      destination.innerHTML =
+        '<option value="">No destinations available</option>';
+    } else {
+      destination.value = "";
+      destination.placeholder = "No destinations available";
+    }
+
+    return;
+  }
+
+  // DESTINATION IS A SELECT
+  if (destination.tagName === "SELECT") {
+    destination.innerHTML =
+      '<option value="">Select destination</option>';
+
+    routes.forEach(route => {
+      const option = document.createElement("option");
+
+      option.value = route.destination;
+      option.textContent = route.destination;
+
+      option.dataset.routeId = route.id;
+
+      destination.appendChild(option);
+    });
+
+    destination.disabled = false;
+    return;
+  }
+
+  // DESTINATION IS AN INPUT
+  if (destination.tagName === "INPUT") {
+    let listId = destination.getAttribute("list");
+
+    if (!listId) {
+      listId = "destinationOptions";
+      destination.setAttribute("list", listId);
+    }
+
+    let list = document.getElementById(listId);
+
+    if (!list) {
+      list = document.createElement("datalist");
+      list.id = listId;
+      destination.parentNode.appendChild(list);
+    }
+
+    list.innerHTML = "";
+
+    routes.forEach(route => {
+      const option = document.createElement("option");
+      option.value = route.destination;
+      list.appendChild(option);
+    });
+
+    destination.placeholder = "Select or enter destination";
+    destination.disabled = false;
+  }
 }
 
 
@@ -243,10 +388,13 @@ async function loadProfile() {
 
 async function searchTrips() {
   const from = document.getElementById("from").value;
+
   const destination =
     document.getElementById("destination").value.trim();
+
   const date =
     document.getElementById("tripDate").value;
+
   const passengers =
     Number(document.getElementById("passengers").value || 1);
 
@@ -256,7 +404,7 @@ async function searchTrips() {
   }
 
   if (!destination) {
-    alert("Please enter your destination.");
+    alert("Please select or enter your destination.");
     return;
   }
 
@@ -302,8 +450,8 @@ async function searchTrips() {
     return;
   }
 
-  const matchingRoutes = routes.filter(route =>
-    route.destination.toLowerCase() ===
+  const matchingRoutes = (routes || []).filter(route =>
+    String(route.destination || "").toLowerCase() ===
     destination.toLowerCase()
   );
 
@@ -643,12 +791,6 @@ async function confirmBooking() {
       "Sorry, there are no longer enough seats available.";
     return;
   }
-
-  /*
-    MVP booking model:
-    One booking represents one passenger.
-    For multiple passengers, we create multiple booking rows.
-  */
 
   const rows = [];
 
@@ -1017,22 +1159,6 @@ async function createTrip() {
 
   message.textContent =
     "Trip creation requires a route and vehicle.";
-
-  /*
-    We deliberately do not automatically create a trip here yet.
-
-    The final admin system will:
-    1. Select departure area
-    2. Select/create destination route
-    3. Select actual vehicle
-    4. Select assigned driver
-    5. Set date and departure time
-    6. Set passenger price
-    7. Open the vehicle
-
-    This prevents the system from promising a vehicle
-    that has not actually been confirmed.
-  */
 }
 
 
@@ -1147,4 +1273,4 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
-      }
+}
