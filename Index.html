@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YAMOGAE DOOR2DOOR</title>
+  <meta name="description" content="YAMOGAE DOOR2DOOR - Safe, Affordable, Local shared door-to-door transport.">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <h1>YAMOGAE</h1>
+      <span>DOOR2DOOR</span>
+    </div>
+    <div class="tagline">Re tsamaya mmogo</div>
+  </header>
+
+  <main>
+
+    <!-- HOME -->
+    <section id="home" class="screen active">
+
+      <div class="hero">
+        <h2>Safe • Affordable • Local</h2>
+        <p>
+          Shared long-distance transport from your door to your destination.
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>Book your trip</h3>
+
+        <label for="from">From</label>
+        <select id="from">
+          <option value="">Select departure area</option>
+        </select>
+
+        <label for="destination">To</label>
+        <input
+          id="destination"
+          type="text"
+          placeholder="Enter destination"
+        >
+
+        <label for="tripDate">Date</label>
+        <input id="tripDate" type="date">
+
+        <label for="passengers">Passengers</label>
+        <select id="passengers">
+          <option value="1">1 passenger</option>
+          <option value="2">2 passengers</option>
+          <option value="3">3 passengers</option>
+          <option value="4">4 passengers</option>
+          <option value="5">5 passengers</option>
+          <option value="6">6 passengers</option>
+        </select>
+
+        <button onclick="searchTrips()">
+          Find available trips
+        </button>
+      </div>
+
+      <div class="card info-card">
+        <h3>How YAMOGAE works</h3>
+
+        <div class="step">
+          <strong>1. Choose your trip</strong>
+          <p>Select where you are leaving from, your destination and date.</p>
+        </div>
+
+        <div class="step">
+          <strong>2. Choose a vehicle</strong>
+          <p>See available vehicles, seats and the price per passenger.</p>
+        </div>
+
+        <div class="step">
+          <strong>3. Book your seat</strong>
+          <p>Enter your pickup address and reserve your seat.</p>
+        </div>
+
+        <div class="step">
+          <strong>4. Travel together</strong>
+          <p>Passengers sharing the same trip share the transport cost.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Already have an account?</h3>
+        <button class="secondary" onclick="showScreen('account')">
+          Sign in / Create account
+        </button>
+      </div>
+
+    </section>
+
+
+    <!-- ACCOUNT -->
+    <section id="account" class="screen">
+
+      <div class="card">
+        <h2>Passenger account</h2>
+
+        <p class="small">
+          An account is required to book and manage your trips.
+        </p>
+
+        <label for="email">Email address</label>
+        <input
+          id="email"
+          type="email"
+          placeholder="you@example.com"
+        >
+
+        <label for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          placeholder="Password"
+        >
+
+        <label for="fullName">Full name</label>
+        <input
+          id="fullName"
+          type="text"
+          placeholder="Your full name"
+        >
+
+        <label for="phone">Phone number</label>
+        <input
+          id="phone"
+          type="tel"
+          placeholder="Your phone number"
+        >
+
+        <button onclick="signUp()">
+          Create passenger account
+        </button>
+
+        <button class="secondary" onclick="signIn()">
+          Sign in
+        </button>
+
+        <p id="accountMessage" class="message"></p>
+      </div>
+
+      <button class="link-button" onclick="showScreen('home')">
+        ← Back to booking
+      </button>
+
+    </section>
+
+
+    <!-- TRIPS -->
+    <section id="trips" class="screen">
+
+      <div class="card">
+        <h2>Available trips</h2>
+        <p id="tripSearchSummary"></p>
+      </div>
+
+      <div id="tripResults"></div>
+
+      <button class="link-button" onclick="showScreen('home')">
+        ← Change search
+      </button>
+
+    </section>
+
+
+    <!-- BOOKING -->
+    <section id="booking" class="screen">
+
+      <div class="card">
+        <h2>Confirm your booking</h2>
+
+        <div id="selectedTrip"></div>
+
+        <label for="pickupAddress">Pickup address</label>
+        <textarea
+          id="pickupAddress"
+          rows="4"
+          placeholder="Enter the address where you want to be picked up"
+        ></textarea>
+
+        <label for="bookingPhone">Phone number</label>
+        <input
+          id="bookingPhone"
+          type="tel"
+          placeholder="Contact number"
+        >
+
+        <button onclick="confirmBooking()">
+          Confirm booking
+        </button>
+
+        <p id="bookingMessage" class="message"></p>
+      </div>
+
+      <button class="link-button" onclick="showScreen('trips')">
+        ← Back to trips
+      </button>
+
+    </section>
+
+
+    <!-- MY BOOKINGS -->
+    <section id="myBookings" class="screen">
+
+      <div class="card">
+        <h2>My bookings</h2>
+        <div id="bookingResults">
+          <p>Loading bookings...</p>
+        </div>
+      </div>
+
+      <button class="link-button" onclick="showScreen('home')">
+        ← Home
+      </button>
+
+    </section>
+
+
+    <!-- DRIVER -->
+    <section id="driver" class="screen">
+
+      <div class="card">
+        <h2>Driver dashboard</h2>
+        <p id="driverWelcome"></p>
+      </div>
+
+      <div id="driverTrips"></div>
+
+      <button class="link-button" onclick="logout()">
+        Sign out
+      </button>
+
+    </section>
+
+
+    <!-- ADMIN -->
+    <section id="admin" class="screen">
+
+      <div class="card">
+        <h2>YAMOGAE Admin</h2>
+        <p>Trip and vehicle management</p>
+      </div>
+
+      <div class="card">
+        <h3>Create trip</h3>
+
+        <label for="adminDestination">Destination</label>
+        <input
+          id="adminDestination"
+          type="text"
+          placeholder="e.g. Johannesburg"
+        >
+
+        <label for="adminDate">Departure date</label>
+        <input id="adminDate" type="date">
+
+        <label for="adminTime">Departure time</label>
+        <input id="adminTime" type="time">
+
+        <label for="adminPrice">Price per passenger</label>
+        <input
+          id="adminPrice"
+          type="number"
+          min="0"
+          step="1"
+          placeholder="R0"
+        >
+
+        <button onclick="createTrip()">
+          Create trip
+        </button>
+
+        <p id="adminMessage" class="message"></p>
+      </div>
+
+      <div class="card">
+        <h3>Trips</h3>
+        <div id="adminTrips">
+          <p>Loading trips...</p>
+        </div>
+      </div>
+
+      <button class="link-button" onclick="logout()">
+        Sign out
+      </button>
+
+    </section>
+
+  </main>
+
+
+  <footer>
+    <p>YAMOGAE DOOR2DOOR</p>
+    <p>Re tsamaya mmogo</p>
+    <p>Safe • Affordable • Local</p>
+  </footer>
+
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Configuration -->
+  <script src="config.js"></script>
+
+  <!-- Application -->
+  <script src="app.js"></script>
+
+</body>
+</html>
